@@ -6,7 +6,7 @@
 
     <groupId>io.peanut.routing</groupId>
     <artifactId>http-router</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>22</maven.compiler.source>
