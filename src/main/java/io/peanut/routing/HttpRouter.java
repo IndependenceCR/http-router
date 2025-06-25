@@ -1,7 +1,6 @@
 package io.peanut.routing;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -14,66 +13,60 @@ public final class HttpRouter<T>
         throw new UnsupportedOperationException("Instantiation Restricted");
     }
 
-    HttpRouter(RouterConfiguration<T> configuration)
+    HttpRouter(HttpRouterConfiguration<T> configuration)
     {
-        this.root = configuration.getRootUnsafe();
+        this.root = configuration.root;
     }
 
     public RouteResult<T> route(String requestPath)
     {
-        ObjectUtil.checkStringIsNotEmpty(requestPath, "'requestPath' cannot be null or empty");
+        Objects.requireNonNull(requestPath, "'requestPath' cannot be null or empty");
+
+        Node<T> current = this.root;
+
+        boolean isDelimiterLeading = requestPath.charAt(0) == '/';
+        int startIndex = isDelimiterLeading ? 1 : 0;
+        int targetLength = requestPath.length();
 
         RouteResult<T> routeResult = null;
+        Map<String, String> params = Collections.emptyMap();
 
-        Node<T> current = root;
-        boolean isDelimiterLeading = requestPath.charAt(0) == '/';
-        int requestLength = requestPath.length();
-
-        Map<String, String> currentParams = Collections.emptyMap();
-
-        for (int offset = isDelimiterLeading ? 1 : 0, nextDelimiter = requestPath.indexOf('/', offset);
-             offset <= requestLength;
-             offset = nextDelimiter + 1, nextDelimiter = requestPath.indexOf('/', offset))
+        for (int start = startIndex, end = requestPath.indexOf('/', startIndex);
+             start < targetLength;
+             start = end + 1, end = (start <= targetLength ? requestPath.indexOf('/', start) : -1))
         {
-            if (nextDelimiter == -1)
+            if (end < 0)
             {
-                nextDelimiter = requestLength;
+                end = targetLength;
             }
 
-            String pathSegment = requestPath.substring(offset, nextDelimiter);
+            boolean isParameterized = requestPath.charAt(start) == ':';
+            String pathSegment;
 
-            Node<T> next = current.findAnyMatch(pathSegment);
+            if (isParameterized)
+            {
+                pathSegment = requestPath.substring(start + 1, end);
+            } else
+            {
+                pathSegment = requestPath.substring(start, end);
+            }
+
+            Node<T> next = Node.binarySearch(current.children, pathSegment);
+            boolean isLastPathSegment = end == targetLength;
 
             if (Objects.nonNull(next))
             {
-                if (nextDelimiter != requestLength)
+                if (!isLastPathSegment)
                 {
-                    if (next.isParameterized())
-                    {
-                        if (currentParams == Collections.EMPTY_MAP)
-                        {
-                            currentParams = new LinkedHashMap<>();
-                        }
-                        currentParams.put(Node.toReadablePathSegment(next), pathSegment);
-                    }
                     current = next;
                 } else
                 {
-                    if (next.isParameterized())
-                    {
-                        if (currentParams == Collections.EMPTY_MAP)
-                        {
-                            currentParams = new LinkedHashMap<>();
-                        }
-                        currentParams.put(Node.toReadablePathSegment(next), pathSegment);
-                    }
-
-                    routeResult = new RouteResult<>(next.handler(), currentParams);
+                    routeResult = new RouteResult<>(next.handler, params);
                     break;
                 }
             } else
             {
-                routeResult = new RouteResult<>(null, Collections.emptyMap());
+                routeResult = new RouteResult<>(null, params);
                 break;
             }
         }

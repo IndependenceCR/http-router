@@ -13,12 +13,12 @@ public final class RouteResult<T>
         this.params = params;
     }
 
-    public Map<String, String> params()
+    public Map<String, String> getParams()
     {
         return params;
     }
 
-    public T handler()
+    public T getHandler()
     {
         return handler;
     }
