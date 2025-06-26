@@ -1,8 +1,6 @@
 package io.peanut.routing;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public final class HttpRouter<T>
 {
@@ -29,44 +27,50 @@ public final class HttpRouter<T>
         int targetLength = requestPath.length();
 
         RouteResult<T> routeResult = null;
-        Map<String, String> params = Collections.emptyMap();
+        Map<String, String> parameters = Collections.emptyMap();
 
-        for (int start = startIndex, end = requestPath.indexOf('/', startIndex);
-             start < targetLength;
-             start = end + 1, end = (start <= targetLength ? requestPath.indexOf('/', start) : -1))
+        for (int sOffset = startIndex, eOffset = requestPath.indexOf('/', startIndex);
+             sOffset < targetLength;
+             sOffset = eOffset + 1, eOffset = (sOffset <= targetLength ? requestPath.indexOf('/', sOffset) : -1))
         {
-            if (end < 0)
+            if (eOffset < 0)
             {
-                end = targetLength;
+                eOffset = targetLength;
             }
 
-            boolean isParameterized = requestPath.charAt(start) == ':';
-            String pathSegment;
-
-            if (isParameterized)
+            Node<T> next = null;
+            if (current.children != Node.EMPTY_CHILDREN)
             {
-                pathSegment = requestPath.substring(start + 1, end);
-            } else
-            {
-                pathSegment = requestPath.substring(start, end);
+                next = NodeChooser.choose(current.children, sOffset, eOffset, requestPath);
             }
-
-            Node<T> next = Node.binarySearch(current.children, pathSegment);
-            boolean isLastPathSegment = end == targetLength;
 
             if (Objects.nonNull(next))
             {
+                if (next.isParameterized)
+                {
+                    if (parameters == Collections.EMPTY_MAP)
+                    {
+                        // Optimistic initial capacity:
+                        // Most route patterns contain no more than 4 parameters (e.g. /users/{id}/posts/{postId}),
+                        // so we preallocate a small map to avoid resizing in common cases.
+                        parameters = new HashMap<>(4);
+                    }
+                    parameters.put(next.pathSegment, requestPath.substring(sOffset, eOffset));
+                }
+
+                boolean isLastPathSegment = (eOffset == targetLength);
+
                 if (!isLastPathSegment)
                 {
                     current = next;
                 } else
                 {
-                    routeResult = new RouteResult<>(next.handler, params);
+                    routeResult = new RouteResult<>(next.handler, parameters);
                     break;
                 }
             } else
             {
-                routeResult = new RouteResult<>(null, params);
+                routeResult = new RouteResult<>(null, parameters);
                 break;
             }
         }

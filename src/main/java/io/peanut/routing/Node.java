@@ -4,11 +4,12 @@ import java.util.Arrays;
 
 final class Node<T>
 {
+    public static String ROOT_CLASSIFIER = "<root>";
     public static final Node<?>[] EMPTY_CHILDREN = new Node<?>[0];
 
     final String pathSegment;
     final boolean isParameterized;
-    public final Node<T>[] children;
+    final Node<T>[] children;
     final T handler;
 
     public static <T> Node<T> rebuildAncestor(Node<T> currentAncestor, Node<T> current, Node<T> newNode)
@@ -44,7 +45,7 @@ final class Node<T>
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Node<T>[] insertChildrenOrdered(Node<T>[] oldChildren, Node<T> child)
+    private static <T> Node<T>[] insertChildrenOrdered(Node<T>[] oldChildren, Node<T> child)
     {
         int oldLength = oldChildren.length;
         Node<T>[] newArray = (Node<T>[]) new Node<?>[oldLength + 1];
@@ -74,32 +75,6 @@ final class Node<T>
         }
 
         return newArray;
-    }
-
-    public static <T> Node<T> binarySearch(Node<T>[] children, String path)
-    {
-        int low = 0;
-        int high = children.length - 1;
-
-        while (low <= high)
-        {
-            int mid = (low + high) >>> 1;
-            Node<T> node = children[mid];
-            int cmp = node.pathSegment.compareTo(path);
-
-            if (cmp < 0)
-            {
-                low = mid + 1;
-            } else if (cmp > 0)
-            {
-                high = mid - 1;
-            } else
-            {
-                return node;
-            }
-        }
-
-        return null;
     }
 
     @SuppressWarnings("unchecked")
