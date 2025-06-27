@@ -6,14 +6,14 @@ import java.util.concurrent.TimeUnit;
 
 @Fork(1)
 @Warmup(iterations = 1, time = 5, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 100, time = 1, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.SECONDS)
-@State(Scope.Group)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
 public class HttpRouterBenchmark
 {
     private final HttpRouter<NoopJob> httpRouter = HttpRouterFactory.create(config -> {
-        // API routes
+        // Existing routes
         config.add("/api/v1/internal/game_request", new NoopJob());
         config.add("/api/v1/internal/game_init", new NoopJob());
         config.add("/api/v1/internal/game_closed", new NoopJob());
@@ -21,40 +21,92 @@ public class HttpRouterBenchmark
         config.add("/api/v1/internal/game/:game_id/state", new NoopJob());
         config.add("/api/v1/internal/game/:game_id", new NoopJob());
 
-        // User management
-        config.add("/user/:id", new NoopJob());
-        config.add("/user/view", new NoopJob());
-        config.add("/user/:id/settings", new NoopJob());
-        config.add("/user/:id/friends", new NoopJob());
-        config.add("/user/:id/friends/:friend_id", new NoopJob());
+        config.add("/api/v2/external/metrics", new NoopJob());
+        config.add("/api/v2/external/readiness", new NoopJob());
+        config.add("/api/v2/external/liveness", new NoopJob());
 
-        // Content
-        config.add("/blog", new NoopJob());
-        config.add("/blog/:id", new NoopJob());
-        config.add("/blog/:id/comments", new NoopJob());
-        config.add("/blog/:id/:slug", new NoopJob());
-        config.add("/blog/:id/:slug/comments", new NoopJob());
+        // Additional varied-depth routes
+        config.add("/api/v1/users", new NoopJob());
+        config.add("/api/v1/users/:user_id", new NoopJob());
+        config.add("/api/v1/users/:user_id/posts", new NoopJob());
+        config.add("/api/v1/users/:user_id/posts/view", new NoopJob());
+        config.add("/api/v1/users/:user_id/posts/edit", new NoopJob());
+        config.add("/api/v1/users/:user_id/posts/:post_id/comments", new NoopJob());
+        config.add("/api/v1/users/:user_id/posts/:post_id/comments/:comment_id", new NoopJob());
+
+        config.add("/health", new NoopJob());
+        config.add("/health/ready", new NoopJob());
+        config.add("/health/live", new NoopJob());
+
+        config.add("/admin", new NoopJob());
+        config.add("/admin/stats", new NoopJob());
+        config.add("/admin/settings", new NoopJob());
+        config.add("/admin/profile/view", new NoopJob());
+        config.add("/admin/settings/:section", new NoopJob());
+
+        config.add("/shop", new NoopJob());
+        config.add("/shop/items", new NoopJob());
+        config.add("/shop/items/:item_id", new NoopJob());
+        config.add("/shop/items/:item_id/price", new NoopJob());
+        config.add("/shop/items/:item_id/variants/:variant_id", new NoopJob());
+
+        config.add("/files/:file_id", new NoopJob());
+        config.add("/files/:file_id/download", new NoopJob());
+        config.add("/files/:file_id/preview", new NoopJob());
     });
 
     @Benchmark
-    @Group("default_group")
-    public final RouteResult<NoopJob> single_depth()
+    public final RouteResult<NoopJob> hit_one_depth()
     {
-        return httpRouter.route("/about");
+        return httpRouter.route("/health");
     }
 
     @Benchmark
-    @Group("default_group")
-    public final RouteResult<NoopJob> two_depth()
+    public final RouteResult<NoopJob> hit_two_depth()
     {
-        return httpRouter.route("/user/view");
+        return httpRouter.route("/admin/stats");
     }
 
     @Benchmark
-    @Group("default_group")
-    public final RouteResult<NoopJob> four_depth()
+    public final RouteResult<NoopJob> hit_three_depth()
+    {
+        return httpRouter.route("/admin/profile/view");
+    }
+
+    @Benchmark
+    public final RouteResult<NoopJob> hit_four_depth()
     {
         return httpRouter.route("/api/v1/internal/game_closed");
+    }
+
+    @Benchmark
+    public final RouteResult<NoopJob> hit_two_depth_last_parameterized()
+    {
+        return httpRouter.route("/files/any");
+    }
+
+    @Benchmark
+    public final RouteResult<NoopJob> hit_three_depth_last_parameterized()
+    {
+        return httpRouter.route("/shop/items/any");
+    }
+
+    @Benchmark
+    public final RouteResult<NoopJob> miss_one_depth_last_unknown()
+    {
+        return httpRouter.route("/missing");
+    }
+
+    @Benchmark
+    public final RouteResult<NoopJob> miss_two_depth_last_unknown()
+    {
+        return httpRouter.route("/api/v3");
+    }
+
+    @Benchmark
+    public final RouteResult<NoopJob> miss_three_depth_last_unknown()
+    {
+        return httpRouter.route("/api/v2/any");
     }
 
     public static class NoopJob
