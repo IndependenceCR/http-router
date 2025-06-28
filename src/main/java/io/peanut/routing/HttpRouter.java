@@ -53,27 +53,27 @@ public final class HttpRouter<T>
 
         Node<T> current = this.root;
 
+        int pathLength = requestPath.length();
+
         boolean isDelimiterLeading = requestPath.charAt(0) == '/';
+        boolean isDelimiterTrailing = requestPath.charAt(pathLength - 1) == '/';
+
         int startIndex = isDelimiterLeading ? 1 : 0;
-        int targetLength = requestPath.length();
+        int endIndex = isDelimiterTrailing ? pathLength - 1 : pathLength;
 
         RouteResult<T> routeResult = null;
         Map<String, String> parameters = Collections.emptyMap();
 
         for (int sOffset = startIndex, eOffset = requestPath.indexOf('/', startIndex);
-             sOffset < targetLength;
-             sOffset = eOffset + 1, eOffset = (sOffset <= targetLength ? requestPath.indexOf('/', sOffset) : -1))
+             sOffset <= pathLength;
+             sOffset = eOffset + 1, eOffset = (sOffset <= pathLength ? requestPath.indexOf('/', sOffset) : -1))
         {
             if (eOffset < 0)
             {
-                eOffset = targetLength;
+                eOffset = pathLength;
             }
 
-            Node<T> next = null;
-            if (current.children != Node.EMPTY_CHILDREN)
-            {
-                next = NodeChooser.choose(current.children, sOffset, eOffset, requestPath);
-            }
+            Node<T> next = NodeChooser.choose(current.children, sOffset, eOffset, requestPath);
 
             if (Objects.nonNull(next))
             {
@@ -89,7 +89,7 @@ public final class HttpRouter<T>
                     parameters.put(next.pathSegment, requestPath.substring(sOffset, eOffset));
                 }
 
-                boolean isLastPathSegment = (eOffset == targetLength);
+                boolean isLastPathSegment = (eOffset == endIndex);
 
                 if (!isLastPathSegment)
                 {

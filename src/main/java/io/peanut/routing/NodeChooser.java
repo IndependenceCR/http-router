@@ -55,11 +55,6 @@ final class NodeChooser
      */
     private static <T> Node<T> pickParameterized(Node<T>[] children)
     {
-        if (children.length == 0)
-        {
-            return null;
-        }
-
         Node<T> tail = children[children.length - 1];
         return tail.isParameterized ? tail : null;
     }
@@ -79,6 +74,11 @@ final class NodeChooser
      */
     public static <T> Node<T> choose(Node<T>[] children, int startOffset, int endOffset, String targetPath)
     {
+        if (children == Node.EMPTY_CHILDREN)
+        {
+            return null;
+        }
+
         Node<T> node = NodeChooser.linearSearch(children, startOffset, endOffset, targetPath);
 
         if (Objects.isNull(node))
