@@ -50,6 +50,12 @@ final class Node<T>
     final Node<T>[] children;
     final T handler;
 
+    static int pathIndexOf(String path, int startOffset, int defaultOffset)
+    {
+        int currentIndex = path.indexOf('/', startOffset);
+        return currentIndex != -1 ? currentIndex : defaultOffset;
+    }
+
     /**
      * Rebuilds the ancestor node in the routing tree with a replacement node inserted
      * in place of the target node.

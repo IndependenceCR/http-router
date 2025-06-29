@@ -28,27 +28,27 @@ public final class HttpRouterConfiguration<T>
         Node<T> current = root;
         Node<T> ancestor = root;
 
-        int firstLeadingIndex = targetPath.charAt(0) == '/' ? 1 : 0;
-        int targetLength = targetPath.length();
+        int pathLength = targetPath.length();
 
-        for (int startIndex = firstLeadingIndex, endIndex = targetPath.indexOf('/', firstLeadingIndex);
-             startIndex <= targetLength;
-             startIndex = endIndex + 1, endIndex = (startIndex <= targetLength ? targetPath.indexOf('/', startIndex) : -1))
+        boolean isDelimiterLeading = pathLength > 1 && targetPath.charAt(0) == '/';
+        boolean isDelimiterTrailing = targetPath.charAt(pathLength - 1) == '/';
+
+        int startIndex = isDelimiterLeading ? 1 : 0;
+        int endIndex = isDelimiterTrailing ? pathLength - 1 : pathLength;
+
+        for (int sOffset = startIndex, eOffset = Node.pathIndexOf(targetPath, sOffset, endIndex);
+             sOffset <= endIndex;
+             sOffset = eOffset + 1, eOffset = Node.pathIndexOf(targetPath, sOffset, endIndex))
         {
-            if (endIndex < 0)
-            {
-                endIndex = targetLength;
-            }
+            boolean isParameterized = targetPath.charAt(sOffset) == ':';
 
-            boolean isParameterized = targetPath.charAt(startIndex) == ':';
-
-            Node<T> next = NodeChooser.choose(current.children, startIndex, endIndex, targetPath);
-            boolean isLastPathSegment = endIndex == targetLength;
+            Node<T> next = NodeChooser.choose(current.children, sOffset, eOffset, targetPath);
+            boolean isLastPathSegment = (eOffset == endIndex);
 
             if (Objects.isNull(next))
             {
                 T currentHandler = isLastPathSegment ? handler : null;
-                String pathSegment = targetPath.substring(isParameterized ? startIndex + 1 : startIndex, endIndex);
+                String pathSegment = targetPath.substring(isParameterized ? sOffset + 1 : sOffset, eOffset);
                 Node<T> candidate = new Node<>(pathSegment, isParameterized, Node.EMPTY_CHILDREN, currentHandler);
 
                 ancestor = Node.rebuildAncestor(ancestor, current, candidate);
