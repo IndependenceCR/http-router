@@ -55,7 +55,7 @@ public final class HttpRouter<T>
 
         int pathLength = requestPath.length();
 
-        boolean isDelimiterLeading = requestPath.charAt(0) == '/';
+        boolean isDelimiterLeading = pathLength > 1 && requestPath.charAt(0) == '/';
         boolean isDelimiterTrailing = requestPath.charAt(pathLength - 1) == '/';
 
         int startIndex = isDelimiterLeading ? 1 : 0;
@@ -64,15 +64,10 @@ public final class HttpRouter<T>
         RouteResult<T> routeResult = null;
         Map<String, String> parameters = Collections.emptyMap();
 
-        for (int sOffset = startIndex, eOffset = requestPath.indexOf('/', startIndex);
-             sOffset <= pathLength;
-             sOffset = eOffset + 1, eOffset = (sOffset <= pathLength ? requestPath.indexOf('/', sOffset) : -1))
+        for (int sOffset = startIndex, eOffset = Node.pathIndexOf(requestPath, sOffset, endIndex);
+             sOffset <= endIndex;
+             sOffset = eOffset + 1, eOffset = Node.pathIndexOf(requestPath, sOffset, endIndex))
         {
-            if (eOffset < 0)
-            {
-                eOffset = pathLength;
-            }
-
             Node<T> next = NodeChooser.choose(current.children, sOffset, eOffset, requestPath);
 
             if (Objects.nonNull(next))

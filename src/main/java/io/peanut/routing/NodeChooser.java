@@ -27,14 +27,23 @@ final class NodeChooser
     private static <T> Node<T> linearSearch(Node<T>[] children, int startOffset, int endOffset, String targetPath)
     {
         int segmentLength = endOffset - startOffset;
+        boolean isPopulatedSegment = (segmentLength != 0);
 
         for (Node<T> child : children)
         {
             String childPath = child.pathSegment;
+            boolean optimisticEquality;
+
+            if (isPopulatedSegment)
+            {
+                optimisticEquality = childPath.length() == segmentLength && childPath.charAt(0) == targetPath.charAt(startOffset);
+            } else
+            {
+                optimisticEquality = childPath.isEmpty();
+            }
 
             // Fast equality check that avoids some internal String checks,
             // improving performance by ~5% in hot paths by skipping certain safety checks in String.equals().
-            boolean optimisticEquality = childPath.length() == segmentLength && childPath.charAt(0) == targetPath.charAt(startOffset);
             if (optimisticEquality && targetPath.regionMatches(startOffset, childPath, 0, segmentLength))
             {
                 return child;
