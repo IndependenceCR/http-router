@@ -9,8 +9,52 @@ import java.util.Objects;
  * Paths may include parameterized segments (starting with ':').
  * </p>
  *
+ * <h2>Path normalization and routing rules</h2>
+ * <ul>
+ *   <li><b>Leading and trailing slashes:</b> Both are optional and do not affect routing.
+ *       <br>
+ *       For example, all of the following are considered equivalent:
+ *       <ul>
+ *         <li><code>/api/v1/readiness</code></li>
+ *         <li><code>api/v1/readiness</code></li>
+ *         <li><code>/api/v1/readiness/</code></li>
+ *         <li><code>api/v1/readiness/</code></li>
+ *       </ul>
+ *   </li>
+ *
+ *   <li><b>Empty segments:</b> Consecutive slashes are allowed. No normalization is performed to collapse them.
+ *       <br>
+ *       These are all valid and treated literally:
+ *       <ul>
+ *         <li><code>//</code></li>
+ *         <li><code>/a//b</code></li>
+ *         <li><code>/user///profile</code></li>
+ *       </ul>
+ *       Be careful, as routes must match the exact structure — a route <code>/a/b</code> will not match <code>/a//b</code>.
+ *   </li>
+ *
+ *   <li><b>Parameter syntax:</b> A path segment starting with a colon (e.g. <code>:id</code>, <code>:ray_id</code>)
+ *       is treated as a parameter and matches any non-empty segment in that position.
+ *       <br>
+ *       For example, all of the following are valid:
+ *       <ul>
+ *         <li><code>/user/:user_id</code></li>
+ *         <li><code>/user/:user_id/profile</code></li>
+ *         <li><code>/user/:user_id/settings</code></li>
+ *       </ul>
+ *       <strong>Only one parameter segment is allowed per level</strong>; defining multiple parameter names under the same
+ *       parent path is not allowed.
+ *   </li>
+ * </ul>
+ *
+ * <p>
+ * Users should ensure consistent structure in route definitions. Although slashes and empty segments are flexible,
+ * careless use may lead to ambiguous or unintended matches.
+ * </p>
+ *
  * @param <T> the type of handler associated with a route
  */
+
 public final class HttpRouterConfiguration<T>
 {
     Node<T> root = new Node<>(Node.ROOT_CLASSIFIER, false, Node.EMPTY_CHILDREN, null);
