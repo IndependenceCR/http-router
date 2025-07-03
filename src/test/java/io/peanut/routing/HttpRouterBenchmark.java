@@ -1,7 +1,9 @@
 package io.peanut.routing;
 
+import org.openjdk.jmh.Main;
 import org.openjdk.jmh.annotations.*;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @Fork(1)
@@ -107,6 +109,11 @@ public class HttpRouterBenchmark
     public final RouteResult<NoopJob> miss_three_depth_last_unknown()
     {
         return httpRouter.route("/api/v2/any");
+    }
+
+    public static void main(String[] args) throws IOException
+    {
+        Main.main(args);
     }
 
     public static class NoopJob
