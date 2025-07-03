@@ -80,9 +80,9 @@ public final class HttpRouterConfiguration<T>
         int startIndex = isDelimiterLeading ? 1 : 0;
         int endIndex = isDelimiterTrailing ? pathLength - 1 : pathLength;
 
-        for (int sOffset = startIndex, eOffset = Node.pathIndexOf(targetPath, sOffset, endIndex);
+        for (int sOffset = startIndex, eOffset = Node.indexOfDelimiter(targetPath, sOffset, endIndex);
              sOffset <= endIndex;
-             sOffset = eOffset + 1, eOffset = Node.pathIndexOf(targetPath, sOffset, endIndex))
+             sOffset = eOffset + 1, eOffset = Node.indexOfDelimiter(targetPath, sOffset, endIndex))
         {
             boolean isParameterized = targetPath.charAt(sOffset) == ':';
 

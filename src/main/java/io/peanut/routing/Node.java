@@ -50,7 +50,16 @@ final class Node<T>
     final Node<T>[] children;
     final T handler;
 
-    static int pathIndexOf(String path, int startOffset, int defaultOffset)
+    /**
+     * Finds the next '/' character in the given {@code path} starting from {@code startOffset}.
+     * If '/' is not found, returns the {@code defaultOffset} instead.
+     *
+     * @param path the string to search in
+     * @param startOffset the position to start searching from
+     * @param defaultOffset the value to return if '/' is not found
+     * @return the index of the next '/' after {@code startOffset}, or {@code defaultOffset} if none found
+     */
+    static int indexOfDelimiter(String path, int startOffset, int defaultOffset)
     {
         int currentIndex = path.indexOf('/', startOffset);
         return currentIndex != -1 ? currentIndex : defaultOffset;

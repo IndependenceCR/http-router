@@ -3,19 +3,14 @@ package io.peanut.routing;
 import java.util.Objects;
 
 /**
- * Utility class responsible for selecting the appropriate child {@link Node}
- * during routing path traversal.
- * <p>
- * This class handles both exact matches (via {@code regionMatches}) and fallback
- * to parameterized nodes when no exact match is found.
- * <p>
- * Designed for high-performance matching in HTTP router implementations.
+ * Helper class used to find the required child {@link Node} while matching a path.
+ * @see Node
  */
 final class NodeChooser
 {
     /**
-     * Performs a linear search among the given child nodes to find a node whose
-     * {@code pathSegment} matches the specified segment of the target path.
+     * Performs a linear search through the child nodes to locate a {@link Node}
+     * whose {@code pathSegment} matches the selected segment of the target path.
      *
      * @param children     array of child nodes to search
      * @param startOffset  start index (inclusive) of the path segment in {@code targetPath}
@@ -32,14 +27,15 @@ final class NodeChooser
         for (Node<T> child : children)
         {
             String childPath = child.pathSegment;
+            int childPathLength = childPath.length();
             boolean optimisticEquality;
 
             if (isPopulatedSegment)
             {
-                optimisticEquality = childPath.length() == segmentLength && childPath.charAt(0) == targetPath.charAt(startOffset);
+                optimisticEquality = childPathLength == segmentLength && childPath.charAt(0) == targetPath.charAt(startOffset);
             } else
             {
-                optimisticEquality = childPath.isEmpty();
+                optimisticEquality = (childPathLength == 0);
             }
 
             // Fast equality check that avoids some internal String checks,
@@ -55,8 +51,9 @@ final class NodeChooser
 
     /**
      * Selects a parameterized child node from the given children array, if one exists.
-     * <p>
-     * By convention, a parameterized node is expected to be the last element in the array.
+     *
+     * @apiNote Parameterized nodes are conventionally stored as the last element in the array.
+     * @see Node#insertChildrenOrdered(Node[], Node)
      *
      * @param children array of child nodes
      * @param <T>      handler type associated with the node
@@ -69,10 +66,10 @@ final class NodeChooser
     }
 
     /**
-     * Chooses the matching child node from the given list based on the provided path segment.
-     * <p>
-     * This method first attempts to find an exact match via {@link #linearSearch}, and if none is found,
-     * falls back to {@link #pickParameterized}.
+     * Finds the matching child {@link Node} in children list by specified segment of the path.
+     *
+     * @apiNote Parameterized nodes are conventionally stored as the last element in the array.
+     * @see Node#insertChildrenOrdered(Node[], Node)
      *
      * @param children     array of child nodes
      * @param startOffset  start index (inclusive) of the path segment in {@code targetPath}

@@ -64,9 +64,9 @@ public final class HttpRouter<T>
         RouteResult<T> routeResult = null;
         Map<String, String> parameters = Collections.emptyMap();
 
-        for (int sOffset = startIndex, eOffset = Node.pathIndexOf(requestPath, sOffset, endIndex);
+        for (int sOffset = startIndex, eOffset = Node.indexOfDelimiter(requestPath, sOffset, endIndex);
              sOffset <= endIndex;
-             sOffset = eOffset + 1, eOffset = Node.pathIndexOf(requestPath, sOffset, endIndex))
+             sOffset = eOffset + 1, eOffset = Node.indexOfDelimiter(requestPath, sOffset, endIndex))
         {
             Node<T> next = NodeChooser.choose(current.children, sOffset, eOffset, requestPath);
 
@@ -96,7 +96,7 @@ public final class HttpRouter<T>
                 }
             } else
             {
-                routeResult = new RouteResult<>(null, parameters);
+                routeResult = new RouteResult<>(null, Collections.emptyMap());
                 break;
             }
         }

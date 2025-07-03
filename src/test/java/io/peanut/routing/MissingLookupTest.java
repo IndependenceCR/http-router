@@ -42,6 +42,7 @@ public final class MissingLookupTest
             config.add("/api/orders/history", "handlerOrderHistory");
             config.add("/api/products/list", "handlerProductList");
             config.add("/admin/users/list", "handlerAdminUsersList");
+            config.add("/api/users/:user_id/profile", "handlerUserProfile");
             config.add("/admin/settings/security", "handlerSecuritySettings");
             config.add("/blog/posts/2024", "handlerBlogPosts2024");
             config.add("/blog/categories/tech", "handlerTechCategory");
@@ -119,9 +120,20 @@ public final class MissingLookupTest
         Assertions.assertSame(Collections.EMPTY_MAP, routeResult.getParameters());
     }
 
-    //depth = 5
     @Test
     @Order(5)
+    public void test_miss_four_depth_last_parameterized()
+    {
+        RouteResult<String> routeResult = httpRouter.route("/api/users/any/profile_mock");
+
+        Assertions.assertNotNull(routeResult);
+        Assertions.assertNull(routeResult.getHandler());
+        Assertions.assertSame(Collections.EMPTY_MAP, routeResult.getParameters());
+    }
+
+    //depth = 5
+    @Test
+    @Order(6)
     public void test_miss_five_depth_last_unknown()
     {
         RouteResult<String> routeResult = httpRouter.route("/api/users/list/active/any");
