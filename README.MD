@@ -1,15 +1,14 @@
 # HttpRouter
 
-A fast and lightweight HTTP router for Java, designed for high-throughput and low-allocation routing in microservices, 
-APIs, and real-time systems.
+Fast and lightweight HTTP router for Java, engineered for high-throughput and low-GC routing in performance-critical systems.
 
 ## Features
 
 - **Performance**  
-  Fast immutable tree build & lookup algorithm that avoids unnecessary substring allocations.
+  Fast-path routing with zero-copy matching and region-based comparisons.
 
 - **Memory**  
-  Runtime allocations minimized to around 50-100 bytes on average, keeping your GC in peace.
+  Only 24B per static and ~150B+ for parameterized routes, keeping your GC in peace.
 
 - **Lightweight**  
   Uses only `java.lang`, `java.util` packages with no external dependencies.
@@ -43,7 +42,7 @@ _Note: All benchmarks use ops/ms as the unit for more readable output._
 
 #### 2) Node Machine  
 
-**Target**: approximately throughput ops/ms in a typical Kubernetes/AWS node environment. 
+**Target**: approximately throughput ops/ms in a typical Kubernetes/AWS node environment.   
 _Note: The node used for this test is a legacy machine; modern cloud instances will typically offer significantly better performance._  
 **Environment**: Node (AMD Phenom X4 955 BE, 4-core CPU, 8GB RAM), Amazon JDK 22.  
 **Threading**: single-threaded
@@ -63,7 +62,8 @@ _Note: All benchmarks use ops/ms as the unit for more readable output._
 
 ### GC
 
-**Target**: approximate memory footprint in bytes per operation (B/op). _Note: Focuses on per-operation memory allocation rather than overall heap consumption._  
+**Target**: approximate memory footprint in bytes per operation (B/op).  
+_Note: Focuses on per-operation memory allocation rather than overall heap consumption._  
 **Environment**: not environment dependent  _(isolated mode)_.  
 **Threading**: single-threaded _(isolated mode)_.
 ```text
