@@ -8,7 +8,7 @@ Fast and lightweight HTTP router for Java, engineered for high-throughput and lo
   Fast-path routing with zero-copy matching and region-based comparisons.
 
 - **Memory**  
-  Only 24B per static and ~150B+ for parameterized routes, keeping your GC in peace.
+  A mere `O(1)` for static paths and `O(N * M)` for dynamic ones, keeping your GC in peace.
 
 - **Lightweight**  
   Uses only `java.lang`, `java.util` packages with no external dependencies.
